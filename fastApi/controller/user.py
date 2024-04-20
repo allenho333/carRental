@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Depends, Body, UploadFile, File, Query
-from entity.user import User
+from model.user import User
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional

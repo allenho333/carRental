@@ -1,6 +1,4 @@
 import uvicorn
-from controller.user import user_app
-from controller.car import car_app
 from fastapi import Body, FastAPI
 from config.app_config import APP_HOST, APP_PORT
 from starlette.responses import RedirectResponse
@@ -15,27 +13,6 @@ from model.user import User
 from model.car import Car
 import json
 db = get_db()
-app = FastAPI()
-origins = ["*"]  # Replace with your allowed origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=False,  # Set to True if cookies are involved
-    allow_methods=["*"],  # List of allowed HTTP methods (e.g., GET, POST, PUT)
-    allow_headers=["*"],  # List of allowed request headers
-)
-
-# 全局自定义异常捕获器
-@app.exception_handler(CustomException)
-async def handler_custom_exception(error: CustomException):
-    return JSONResponse(
-        status_code=error.code,
-        content=error.message,
-    )
-
-
-async def document():
-    return RedirectResponse(url="/docs")
 role = ""
 
 def addCarMethod():
@@ -47,7 +24,10 @@ def addCarMethod():
     maximum_rent_period = input("maximum_rent_period: ")
     unit_price = input("unit_price: ")
     available_now = input("available_now: ")
-    addCar(Car(maker=maker, model=model, year=year, mileage=mileage, minimum_rent_period=minimum_rent_period, maximum_rent_period=maximum_rent_period, unit_price=unit_price,available_now=available_now),db)
+    booking_now = input("booking_now: ")
+    addCar(Car(maker=maker, model=model, year=year, mileage=mileage, minimum_rent_period=minimum_rent_period, maximum_rent_period=maximum_rent_period, unit_price=unit_price,available_now=available_now,
+    booking_now = booking_now
+    ),db)
     print("add car success")
 def deleteCarMethod():
     id = input("id: ")
@@ -63,7 +43,8 @@ def updateCarMethod():
     maximum_rent_period = input("maximum_rent_period: ")
     unit_price = input("unit_price: ")
     available_now = input("available_now: ")
-    updateCar(id,Car(maker=maker, model=model, year=year, mileage=mileage, minimum_rent_period=minimum_rent_period, maximum_rent_period=maximum_rent_period, unit_price=unit_price,available_now=available_now),db)
+    booking_now = input("booking_now: ")
+    updateCar(id,Car(maker=maker, model=model, year=year, mileage=mileage, minimum_rent_period=minimum_rent_period, maximum_rent_period=maximum_rent_period, unit_price=unit_price,available_now=available_now,booking_now = booking_now),db)
 def logoutMethod():
     print("logout success")
     login(db)
@@ -95,49 +76,50 @@ def disapproveMethod():
     print("disapprove success") 
 def showActions(role):
     if(role == "admin"):
-        print("As Admin, please input below actions:showAllAvailableCars,delete, update, add, approve, disapprove, logout")
-        action = input("action: ")
-        if(action == "delete"):
-            deleteCarMethod()
-            showActions(role)
-        elif (action == "update") :
-            updateCarMethod()
-            showActions(role)
-        elif (action == "add"):
-            addCarMethod()
-            showActions(role)
-        elif (action == "approve"):
-            approveMethod()
-            showActions(role)
-        elif (action == "disapprove"):
-            disapproveMethod()
-            showActions(role)
-        elif (action == "showAllAvailableCars"):
-            showAllAvailableCarsMethod()
-            showActions(role)
-        elif (action == "logout"):
-            logoutMethod()
+        print("As Admin, please input below actions number: \n 1: showAllAvailableCars, \n 2: delete, \n 3:update, \n 4:add, \n 5: approve, \n 6:disapprove, \n7: logout")
+        while True:
+            action = input("action number: ")
+            if(action == "2"):
+                deleteCarMethod()
+                showActions(role)
+            elif (action == "3") :
+                updateCarMethod()
+                showActions(role)
+            elif (action == "4"):
+                addCarMethod()
+                showActions(role)
+            elif (action == "5"):
+                approveMethod()
+                showActions(role)
+            elif (action == "6"):
+                disapproveMethod()
+                showActions(role)
+            elif (action == "1"):
+                showAllAvailableCarsMethod()
+                showActions(role)
+            elif (action == "7"):
+                logoutMethod()
     elif(role == "user"):
-        print("As normal user, please input below actions:showAllAvailableCars, calculatePrice, booking, logout")
-        action = input("action: ")
-        if(action == "calculatePrice"):
-            showAllAvailableCarsMethod()
-            id = input("id: ")
-            rentalDates = int(input("totalRentalDates: "))
-            calculatePrice(id,rentalDates,db)
-            showActions(role)   
-        elif(action == "booking"):
-            showAllAvailableCarsMethod()
-            id = input("id: ")
-            rentalDates = int(input("totalRentalDates: "))
-            booking(id,rentalDates,db)
-            showActions(role)
-        elif(action == "showAllAvailableCars"):
-            showAllAvailableCarsMethod()
-            showActions(role)
-        elif(action == "logout"):
-            logoutMethod()
-        
+        print("As normal user, please input below actions: \n 1: showAllAvailableCars, \n 2:calculatePrice, \n 3:booking,\n 4: logout")
+        while True:
+            action = input("action number: ")
+            if(action == "2"):
+                showAllAvailableCarsMethod()
+                id = input("id: ")
+                rentalDates = int(input("totalRentalDates: "))
+                calculatePrice(id,rentalDates,db)
+                showActions(role)   
+            elif(action == "3"):
+                showAllAvailableCarsMethod()
+                id = input("id: ")
+                rentalDates = int(input("totalRentalDates: "))
+                booking(id,rentalDates,db)
+                showActions(role)
+            elif(action == "1"):
+                showAllAvailableCarsMethod()
+                showActions(role)
+            elif(action == "4"):
+                logoutMethod()      
 def showAllAvailableCarsMethod():
     db = get_db()
     availableCars = showAllAvailableCars(db) 
@@ -160,54 +142,58 @@ def showPage(role):
     else:
         showAllAvailableCarsMethod()
         showActions(role)
-
 def login (db=Depends(get_db)):
-    print("login...")
-    account = input("account: ")
-    password = input("password: ")
-    result = loginUser(User(username=account, password=password),db)
-    if(result == "success"):
-        if(account == "admin"):
-            role = "admin"
-            showPage(role)
+    while True:
+        print("login...")
+        account = input("account: ")
+        password = input("password: ")
+        result = loginUser(User(username=account, password=password),db)
+        print("result",result)
+        if(result == "success"):
+            if(account == "admin"):
+                role = "admin"
+                print(f"login success, role is {role}")
+                showPage(role)
+            else:
+                role = "user"
+                print(f"login success, role is {role}")
+                showPage(role)
+            
         else:
-            role = "user"
-            showPage(role)
-        print(f"login success, role is {role}")
-    else:
-        print("login failed")
+            print("login failed, please try again")
+            # login(db)
+def initializeDatabse():
+    print("initialing database and add sample data...")
+    # add admin user with username as admin and password as admin to database
+    signupUser(User(username="admin", password="admin"),db)
+    print("add admin user with username as admin and password as admin t o database")
+    # add normal user with username as user and password as user to database
+    signupUser(User(username="user", password="user"),db)
+    print("add normal user with username as user and password as user to database")
+    #add cars
+    addCar(Car(maker="Toyota", model="Camry", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True,
+    booking_now = False),db)
+    addCar(Car(maker="Toyota", model="Corolla", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True,booking_now = False),db)
+    addCar(Car(maker="Toyota", model="RAV4", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True,booking_now = False),db)
 
 def start():
-    # global app
-    # app.include_router(user_app, prefix='/users', tags=['用户相关API'])
-    # app.include_router(car_app, prefix='/cars', tags=['车辆相关API'])
-    # uvicorn.run(app, host=APP_HOST, port=APP_PORT)
-    print("start and initialing sizing database...")
-    signupUser(User(username="admin", password="admin"),db)
-    signupUser(User(username="user", password="user"),db)
-    #add car
-    addCar(Car(maker="Toyota", model="Camry", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True),db)
-    # addCar(Car(maker="Toyota", model="Corolla", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True),db)
-    # addCar(Car(maker="Toyota", model="RAV4", year=2020, mileage=1000, minimum_rent_period=1, maximum_rent_period=30, unit_price=100,available_now=True),db)
-    print("please register or login your account")
-    method = input("method(enter signup or login): ")
-    if(method == "signup"):
-        print("signup...")
-        account = input("account: ")
-        password = input("password: ")       
-        result = signupUser(User(username=account, password=password),db)
-        if(result == "success"):
-            print("register success")
-            print("please login")
+    initializeDatabse()
+    while True:
+        print("please signup or login your account: \n 1. signup \n 2. login")
+        method = input("method(enter 1 for signup or 2 for login): ")
+        if(method == "1"):
+            print("signup...")
+            account = input("account: ")
+            password = input("password: ")       
+            result = signupUser(User(username=account, password=password),db)
+            if(result == "success"):
+                print("register success")
+                print("please login")
+                login(db)
+            else:
+                print("register failed")
+        elif(method == "2"):
             login(db)
-        else:
-            print("register failed")
-    elif(method == "login"):
-        login(db)
-    # action = input("action delete update add approve disaprrove logout: ")
-
-
-
-
+   
 if __name__ == '__main__':
     start()

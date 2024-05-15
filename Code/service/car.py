@@ -41,6 +41,8 @@ def updateCar(id:int, car: Car, db: Session):
     car_instance.available_now = car.available_now
     car_instance.minimum_rent_period = car.minimum_rent_period
     car_instance.maximum_rent_period = car.maximum_rent_period
+    car_instance.unit_price = car.unit_price
+    car_instance.booking_now = car.booking_now
     db.commit()
     db.refresh(car_instance)
     print("update car success")

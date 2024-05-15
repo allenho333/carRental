@@ -46,7 +46,7 @@ there are 3 cars in memeory database in default
 ### Installation
 1. Clone the Repository
 ```bash
-git clone https://github.com/joseabril25/car-rental-py.git
+git clone https://github.com/allenho333/carRental.git
 cd car_rental_system
 ```
  
